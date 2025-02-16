@@ -11,27 +11,47 @@ import java.net.URL;
 import java.security.ProtectionDomain;
 
 /**
+ * Transformer that modifies the bytecode of java.lang.Throwable to enable exception logging.
+ * It also provides optional class loader tracing if enabled in the configuration.
+ *
  * @author asmishra
  * @since 2/13/2025
  */
 public class ExceptionTransformer implements ClassFileTransformer {
     private final Configuration configuration;
     private final ExceptionLogger exceptionLogger;
+    private static final String THROWABLE_CLASS_NAME_FORMATTED = "java/lang/Throwable";
 
+    /**
+     * Constructs an ExceptionTransformer instance with the provided configuration and logger.
+     *
+     * @param configuration  The configuration settings for exception transformation.
+     * @param exceptionLogger The logger instance used for recording class transformations and exceptions.
+     */
     public ExceptionTransformer(Configuration configuration, ExceptionLogger exceptionLogger) {
         this.configuration = configuration;
         this.exceptionLogger = exceptionLogger;
     }
 
+    /**
+     * Transforms the bytecode of the specified class, injecting exception logging if applicable.
+     *
+     * @param loader              The defining class loader of the class being transformed.
+     * @param className           The name of the class in internal JVM format.
+     * @param classBeingRedefined The class being redefined (null if this is a new load).
+     * @param protectionDomain    The protection domain of the class being defined.
+     * @param classfileBuffer     The input bytecode of the class.
+     * @return The transformed bytecode if modifications are made; otherwise, the original bytecode.
+     * @throws IllegalClassFormatException If an invalid transformation occurs.
+     */
     @Override
     public byte[] transform(ClassLoader loader, String className,
                             Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
         if(configuration.isClassLoaderTracing()) {
             if(className != null) {
-                URL jarLocation = null;
-                String traceInfo = null;
+                String traceInfo;
                 if (protectionDomain != null) {
-                    jarLocation = protectionDomain.getCodeSource().getLocation();
+                    URL jarLocation = protectionDomain.getCodeSource().getLocation();
                     traceInfo = "Class: " + className + "\n" + "ClassLoader Hierarchy: " + getClassLoaderHierarchy(loader) + "\nLoaded from: " + jarLocation.getPath();
                 } else {
                     traceInfo = "Class: " + className + "\n" + "ClassLoader Hierarchy: " + getClassLoaderHierarchy(loader);
@@ -39,7 +59,7 @@ public class ExceptionTransformer implements ClassFileTransformer {
                 exceptionLogger.logClassLoading(traceInfo);
             }
         }
-        if (!"java/lang/Throwable".equals(className)) {
+        if (!THROWABLE_CLASS_NAME_FORMATTED.equals(className)) {
             return classfileBuffer;
         }
         try {
@@ -49,14 +69,20 @@ public class ExceptionTransformer implements ClassFileTransformer {
                 constructor.insertAfter("com.asm.eb.logger.ExceptionLogger exceptionLogger = com.asm.eb.logger.ExceptionLogger.getInstance(); " +
                         "try {exceptionLogger.logException(this);} catch(Exception e){}");
             }
-            exceptionLogger.logInfo("Instrumented java/lang/Throwable, we are set!");
+            exceptionLogger.logInfo("Successfully instrumented java.lang.Throwable");
             return throwableClass.toBytecode();
         } catch (NotFoundException | CannotCompileException |IOException e) {
-            exceptionLogger.logError("Oh no! We hit a snag while modifying throwable: " + e.getMessage());
+            exceptionLogger.logError("Error during Throwable modification: " + e.getMessage());
         }
         return classfileBuffer;
     }
 
+    /**
+     * Builds a string representation of the class loader hierarchy for a given class loader.
+     *
+     * @param loader The starting class loader.
+     * @return A formatted string showing the class loader hierarchy.
+     */
     private String getClassLoaderHierarchy(ClassLoader loader) {
         StringBuilder hierarchy = new StringBuilder();
 

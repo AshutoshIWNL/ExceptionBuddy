@@ -11,6 +11,7 @@ public class Configuration {
     private List<String> filters;
     private String LogFilePath;
     private boolean classLoaderTracing;
+    private boolean exceptionMonitoring;
     public List<String> getFilters() {
         return filters;
     }
@@ -41,5 +42,13 @@ public class Configuration {
 
     public void setClassLoaderTracing(boolean classLoaderTracing) {
         this.classLoaderTracing = classLoaderTracing;
+    }
+
+    public boolean isExceptionMonitoring() {
+        return exceptionMonitoring;
+    }
+
+    public void setExceptionMonitoring(boolean exceptionMonitoring) {
+        this.exceptionMonitoring = exceptionMonitoring;
     }
 }
