@@ -56,8 +56,8 @@ public class ExceptionBuddy {
         }
 
         ExceptionLogger exceptionLogger = configuration.isUseFilters()
-                ? ExceptionLogger.getInstance(configuration.getLogFilePath(), configuration.getFilters(), configuration.isExceptionMonitoring())
-                : ExceptionLogger.getInstance(configuration.getLogFilePath(), null, configuration.isExceptionMonitoring());
+                ? ExceptionLogger.getInstance(configuration.getLogFilePath(), configuration.getFilters(), configuration.isExceptionMonitoring(), configuration.getCnfSkipString())
+                : ExceptionLogger.getInstance(configuration.getLogFilePath(), null, configuration.isExceptionMonitoring(), configuration.getCnfSkipString());
 
         exceptionLogger.logInfo("Exception Buddy initialized successfully.");
 

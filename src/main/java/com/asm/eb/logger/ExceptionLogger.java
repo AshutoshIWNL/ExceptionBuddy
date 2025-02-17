@@ -21,12 +21,15 @@ public class ExceptionLogger {
     private final List<String> filters; //Make it non-final if runtime attach has to be added
     private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     private final boolean monitorException;
+    private final String cnfSkipString;
+    private static final String defaultCnfSkipString = "java.lang.ClassLoader.loadClass";
 
     private final Lock lock = new ReentrantLock();
 
-    private ExceptionLogger(String logFilePath, List<String> filters, boolean monitorException) {
+    private ExceptionLogger(String logFilePath, List<String> filters, boolean monitorException, String cnfSkipString) {
         this.filters = filters;
         this.monitorException = monitorException;
+        this.cnfSkipString = cnfSkipString;
         try {
             writer = new PrintWriter(new FileWriter(logFilePath, true), true);
         } catch (IOException e) {
@@ -34,11 +37,11 @@ public class ExceptionLogger {
         }
     }
 
-    public static synchronized ExceptionLogger getInstance(String logFilePath, List<String> filters, boolean monitorException) {
+    public static synchronized ExceptionLogger getInstance(String logFilePath, List<String> filters, boolean monitorException, String cnfSkipString) {
         if (instance == null) {
             synchronized (ExceptionLogger.class) {
                 if (instance == null) {
-                    instance = new ExceptionLogger(logFilePath, filters, monitorException);
+                    instance = new ExceptionLogger(logFilePath, filters, monitorException, cnfSkipString);
                 }
             }
         }
@@ -55,6 +58,10 @@ public class ExceptionLogger {
     public void logException(Throwable ex) {
         lock.lock();
         try {
+            if(ex instanceof ClassNotFoundException) {
+                if(shouldSkip(ex))
+                    return;
+            }
             if(monitorException) {
                 StatsStore.incrementExceptionCount();
                 if (isCriticalJVMException(ex)) {
@@ -73,6 +80,16 @@ public class ExceptionLogger {
         } finally {
             lock.unlock();
         }
+    }
+
+    private boolean shouldSkip(Throwable ex) {
+        if(cnfSkipString == null || !cnfSkipString.startsWith(defaultCnfSkipString))
+            return false;
+        for (StackTraceElement element : ex.getStackTrace()) {
+            if(element.toString().equals(cnfSkipString))
+                return true;
+        }
+        return false;
     }
 
     public void logInfo(String message) {

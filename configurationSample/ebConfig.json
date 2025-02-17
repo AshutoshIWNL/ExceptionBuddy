@@ -1,9 +1,10 @@
 {
-  "useFilters": true,
+  "useFilters": false,
   "filters": [
-    "com.infa"
+    "org.apache.logging.log4j"
   ],
   "logFilePath": "C:\\Users\\asmishra\\Documents\\PS\\Tools\\ExceptionBuddy\\eb.log",
   "classLoaderTracing" : true,
-  "exceptionMonitoring" : false
+  "exceptionMonitoring" : false,
+  "cnfSkipString" : "java.lang"
 }

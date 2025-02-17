@@ -12,6 +12,7 @@ public class Configuration {
     private String LogFilePath;
     private boolean classLoaderTracing;
     private boolean exceptionMonitoring;
+    private String cnfSkipString;
     public List<String> getFilters() {
         return filters;
     }
@@ -50,5 +51,13 @@ public class Configuration {
 
     public void setExceptionMonitoring(boolean exceptionMonitoring) {
         this.exceptionMonitoring = exceptionMonitoring;
+    }
+
+    public String getCnfSkipString() {
+        return cnfSkipString;
+    }
+
+    public void setCnfSkipString(String cnfSkipString) {
+        this.cnfSkipString = cnfSkipString;
     }
 }
