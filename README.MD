@@ -79,7 +79,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 
 ## Author
 
-Ashutosh Mishra
+Ashutosh Mishra 【=◈︿◈=】
 
 ## Support and Feedback
 
