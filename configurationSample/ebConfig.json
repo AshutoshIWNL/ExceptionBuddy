@@ -1,10 +1,10 @@
 {
-  "useFilters": false,
+  "useFilters": true,
   "filters": [
     "org.apache.logging.log4j"
   ],
-  "logFilePath": "C:\\Users\\asmishra\\Documents\\PS\\Tools\\ExceptionBuddy\\eb.log",
+  "logFilePath": "C:\\tools\\eb.log",
   "classLoaderTracing" : true,
   "exceptionMonitoring" : false,
-  "cnfSkipString" : "java.lang"
+  "cnfSkipString" : "java.lang.ClassLoader.loadClass(ClassLoader.java:406)"
 }
