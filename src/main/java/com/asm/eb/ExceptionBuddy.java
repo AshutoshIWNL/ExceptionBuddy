@@ -6,8 +6,12 @@ import com.asm.eb.transformer.ExceptionTransformer;
 import com.asm.eb.config.ConfigurationParser;
 import com.asm.eb.model.Configuration;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
+import java.net.URISyntaxException;
+import java.util.jar.JarFile;
 
 /**
  * Entry point for the ExceptionBuddy Java agent.
@@ -20,6 +24,8 @@ public class ExceptionBuddy {
 
     private static final String EXCEPTION_BUDDY_TAG = "[ExceptionBuddy]";
     private static final String THROWABLE_CLASS_NAME = "java.lang.Throwable";
+    private static final String PREMAIN_MODE = "javaagent";
+    private static final String AGENTMAIN_MODE = "attachVM";
 
     /**
      * The premain method is executed before the main application starts.
@@ -28,7 +34,26 @@ public class ExceptionBuddy {
      * @param inst      The instrumentation instance.
      */
     public static void premain(String agentArgs, Instrumentation inst) {
-        instrument(agentArgs, inst);
+        instrument(agentArgs, inst, PREMAIN_MODE);
+    }
+
+    /**
+     * The agentmain method is executed for runtime attachments.
+     *
+     * @param agentArgs Arguments passed to the agent.
+     * @param inst      The instrumentation instance.
+     */
+    public static void agentmain(String agentArgs, Instrumentation inst) {
+        try {
+            File agentJar = new File(ExceptionBuddy.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            //Since we are dealing with java.lang.Throwable transformation, Boostrap classloader will be the one trying to load our agent classes downstream.
+            //This will result in classloading issues due to visibility principle.
+            //Normal approach is to use -Xbootclasspath but since it is runtime, we are using the below to append our agent jar to bootstrap's classpath.
+            inst.appendToBootstrapClassLoaderSearch(new JarFile(agentJar));
+        } catch (URISyntaxException | IOException e) {
+            throw new RuntimeException(e);
+        }
+        instrument(agentArgs, inst, AGENTMAIN_MODE);
     }
 
     /**
@@ -37,8 +62,8 @@ public class ExceptionBuddy {
      * @param agentArgs Arguments passed to the agent.
      * @param inst      The instrumentation instance.
      */
-    private static void instrument(String agentArgs, Instrumentation inst) {
-        System.out.println(EXCEPTION_BUDDY_TAG + " Initialization started...");
+    private static void instrument(String agentArgs, Instrumentation inst, String mode) {
+        System.out.println(EXCEPTION_BUDDY_TAG + " <" + mode + "> Initialization started...");
         String configurationFile = null;
         try {
             configurationFile = ExceptionBuddyConfigurator.getConfigurationFile(agentArgs);

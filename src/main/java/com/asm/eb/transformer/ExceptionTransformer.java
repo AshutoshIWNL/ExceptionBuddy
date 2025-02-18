@@ -4,6 +4,7 @@ import com.asm.eb.logger.ExceptionLogger;
 import com.asm.eb.model.Configuration;
 import javassist.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
@@ -64,14 +65,14 @@ public class ExceptionTransformer implements ClassFileTransformer {
         }
         try {
             ClassPool classPool = ClassPool.getDefault();
-            CtClass throwableClass = classPool.get("java.lang.Throwable");
+            CtClass throwableClass = classPool.makeClass(new ByteArrayInputStream(classfileBuffer));
             for (CtConstructor constructor : throwableClass.getDeclaredConstructors()) {
                 constructor.insertAfter("com.asm.eb.logger.ExceptionLogger exceptionLogger = com.asm.eb.logger.ExceptionLogger.getInstance(); " +
                         "try {exceptionLogger.logException(this);} catch(Exception e){}");
             }
             exceptionLogger.logInfo("Successfully instrumented java.lang.Throwable");
             return throwableClass.toBytecode();
-        } catch (NotFoundException | CannotCompileException |IOException e) {
+        } catch (CannotCompileException |IOException e) {
             exceptionLogger.logError("Error during Throwable modification: " + e.getMessage());
         }
         return classfileBuffer;
