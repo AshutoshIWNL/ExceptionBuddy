@@ -10,6 +10,7 @@ ExceptionBuddy is a powerful Java agent that provides comprehensive exception mo
 - **Detailed Class Loading Tracing**: Optional tracing of class loader hierarchies for debugging class loading issues
 - **Low Overhead**: Minimal performance impact on your running application
 - **Runtime Exception Monitoring**: Real-time monitoring of exception patterns and frequencies
+- **Runtime Attach**: Supports attach at Runtime through Attach API
 
 ## How It Works
 
