@@ -18,7 +18,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ExceptionLogger {
     private volatile static ExceptionLogger instance;
     private PrintWriter writer;
-    private final List<String> filters; //Make it non-final if runtime attach has to be added
+    private final List<String> filters; //Make it non-final if runtime config file changes has to be taken up
     private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     private final boolean monitorException;
     private final String cnfSkipString;
