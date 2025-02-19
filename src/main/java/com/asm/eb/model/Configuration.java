@@ -13,6 +13,7 @@ public class Configuration {
     private boolean classLoaderTracing;
     private boolean exceptionMonitoring;
     private String cnfSkipString;
+    private boolean printJVMSysProps;
     public List<String> getFilters() {
         return filters;
     }
@@ -59,5 +60,13 @@ public class Configuration {
 
     public void setCnfSkipString(String cnfSkipString) {
         this.cnfSkipString = cnfSkipString;
+    }
+
+    public boolean isPrintJVMSysProps() {
+        return printJVMSysProps;
+    }
+
+    public void setPrintJVMSysProps(boolean printJVMSysProps) {
+        this.printJVMSysProps = printJVMSysProps;
     }
 }

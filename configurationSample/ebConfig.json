@@ -6,5 +6,6 @@
   "logFilePath": "C:\\tools\\eb.log",
   "classLoaderTracing" : true,
   "exceptionMonitoring" : false,
-  "cnfSkipString" : "java.lang.ClassLoader.loadClass(ClassLoader.java:406)"
+  "cnfSkipString" : "java.lang.ClassLoader.loadClass(ClassLoader.java:406)",
+  "printJVMSysProps": true
 }

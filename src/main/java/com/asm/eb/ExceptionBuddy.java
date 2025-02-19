@@ -5,6 +5,7 @@ import com.asm.eb.monitor.JVMExceptionMonitor;
 import com.asm.eb.transformer.ExceptionTransformer;
 import com.asm.eb.config.ConfigurationParser;
 import com.asm.eb.model.Configuration;
+import com.asm.eb.util.JVMUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -94,6 +95,9 @@ public class ExceptionBuddy {
                 : ExceptionLogger.getInstance(configuration.getLogFilePath(), null, configuration.isExceptionMonitoring(), configuration.getCnfSkipString());
 
         exceptionLogger.logInfo("Exception Buddy initialized successfully.");
+        exceptionLogger.logInfo(JVMUtils.getJVMCommandLine());
+        if(configuration.isPrintJVMSysProps())
+            exceptionLogger.logInfo(JVMUtils.getJVMSystemProperties());
 
         ExceptionTransformer exceptionTransformer = new ExceptionTransformer(configuration, exceptionLogger);
 
