@@ -5,7 +5,6 @@ import com.asm.eb.model.Configuration;
 import javassist.*;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.net.URL;
@@ -97,7 +96,7 @@ public class ExceptionTransformer implements ClassFileTransformer {
             }
             exceptionLogger.logInfo("Successfully instrumented java.lang.Throwable");
             return throwableClass.toBytecode();
-        } catch (Throwable e) {
+        } catch (Exception e) {
             exceptionLogger.logError("Error during Throwable modification: " + e.getMessage());
         }
         return classfileBuffer;
