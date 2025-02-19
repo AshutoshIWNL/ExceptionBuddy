@@ -23,6 +23,7 @@ public class ExceptionLogger {
     private final boolean monitorException;
     private final String cnfSkipString;
     private static final String defaultCnfSkipString = "java.lang.ClassLoader.loadClass";
+    private static boolean isJdk9OrLater = Integer.parseInt(System.getProperty("java.version").split("\\.")[0]) >= 9;
 
     private final Lock lock = new ReentrantLock();
 
@@ -58,9 +59,11 @@ public class ExceptionLogger {
     public void logException(Throwable ex) {
         lock.lock();
         try {
-            if(ex instanceof ClassNotFoundException) {
-                if(shouldSkip(ex))
-                    return;
+            if(!isJdk9OrLater) {
+                if(ex instanceof ClassNotFoundException) {
+                    if(shouldSkip(ex))
+                        return;
+                }
             }
             if(monitorException) {
                 StatsStore.incrementExceptionCount();
@@ -82,6 +85,7 @@ public class ExceptionLogger {
         }
     }
 
+    //Hacky solution to avoid misleading ClassNotFoundException (Dependent on user's knowledge on ClassNotFoundException stack frames in false positive scenarios)
     private boolean shouldSkip(Throwable ex) {
         if(cnfSkipString == null || !cnfSkipString.startsWith(defaultCnfSkipString))
             return false;
