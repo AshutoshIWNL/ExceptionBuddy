@@ -29,6 +29,28 @@
                   </manifestEntries>
                 </transformer>
               </transformers>
+              <relocations>
+                <relocation>
+                  <pattern>javassist</pattern>
+                  <shadedPattern>com.asm.eb.internal.javassist</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.fasterxml.jackson</pattern>
+                  <shadedPattern>com.asm.eb.internal.jackson</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.commons.cli</pattern>
+                  <shadedPattern>com.asm.eb.internal.commons.cli</shadedPattern>
+                </relocation>
+              </relocations>
+              <filters>
+                <filter>
+                  <artifact>com.fasterxml.jackson.core:jackson-core</artifact>
+                  <excludes>
+                    <exclude>META-INF/versions/**</exclude>
+                  </excludes>
+                </filter>
+              </filters>
             </configuration>
           </execution>
         </executions>
