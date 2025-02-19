@@ -153,7 +153,7 @@ public class ExceptionLogger {
             return true;
         for (StackTraceElement element : ex.getStackTrace()) {
             for (String filter : filters) {
-                if (element.getClassName().startsWith(filter)) {
+                if (element.toString().startsWith(filter)) {
                     return true;
                 }
             }
