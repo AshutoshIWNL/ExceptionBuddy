@@ -66,13 +66,38 @@ public class ExceptionTransformer implements ClassFileTransformer {
         try {
             ClassPool classPool = ClassPool.getDefault();
             CtClass throwableClass = classPool.makeClass(new ByteArrayInputStream(classfileBuffer));
+            boolean isJdk9OrLater = Integer.parseInt(System.getProperty("java.version").split("\\.")[0]) >= 9;
             for (CtConstructor constructor : throwableClass.getDeclaredConstructors()) {
-                constructor.insertAfter("com.asm.eb.logger.ExceptionLogger exceptionLogger = com.asm.eb.logger.ExceptionLogger.getInstance(); " +
-                        "try {exceptionLogger.logException(this);} catch(Exception e){}");
+                if (isJdk9OrLater) {
+                    // In JDK 8, we used inst.appendToBootstrapClassLoaderSearch() to ensure that ExceptionLogger was loaded by the
+                    // bootstrap class loader, as Throwable itself is loaded by bootstrap. However, in JDK 9+, this approach no longer
+                    // works because the bootstrap class loader does not search added JARs. To work around this, we dynamically load
+                    // ExceptionLogger using the thread context class loader instead. Additionally, we explicitly pass (Object[]) null
+                    // for no-arg method calls and wrap 'this' in new Object[]{this} for proper reflection-based invocation.
+                    // This ensures compatibility with both JDK 8 and JDK 17.
+                    constructor.insertAfter(
+                            "{ " +
+                                    "   try { " +
+                                    "       Class loggerClass = Class.forName(\"com.asm.eb.logger.ExceptionLogger\", true, java.lang.Thread.currentThread().getContextClassLoader()); " +
+                                    "       java.lang.reflect.Method getInstanceMethod = loggerClass.getMethod(\"getInstance\", (Class[]) null); " +
+                                    "       Object loggerInstance = getInstanceMethod.invoke(null, (Object[]) null); " + // FIX: Explicitly passing null arguments
+                                    "       java.lang.reflect.Method logMethod = loggerClass.getMethod(\"logException\", new Class[]{Throwable.class}); " +
+                                    "       logMethod.invoke(loggerInstance, new Object[]{this}); " + // FIX: Correctly passing arguments to invoke
+                                    "   } catch (Throwable ignored) {} " +
+                                    "}"
+                    );
+                } else {
+                    constructor.insertAfter(
+                            "{ " +
+                                    "   com.asm.eb.logger.ExceptionLogger exceptionLogger = com.asm.eb.logger.ExceptionLogger.getInstance(); " +
+                                    "   try { exceptionLogger.logException(this); } catch(Exception e) {} " +
+                                    "}"
+                    );
+                }
             }
             exceptionLogger.logInfo("Successfully instrumented java.lang.Throwable");
             return throwableClass.toBytecode();
-        } catch (CannotCompileException |IOException e) {
+        } catch (Throwable e) {
             exceptionLogger.logError("Error during Throwable modification: " + e.getMessage());
         }
         return classfileBuffer;

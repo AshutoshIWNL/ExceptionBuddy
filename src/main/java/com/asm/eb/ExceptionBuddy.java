@@ -34,6 +34,15 @@ public class ExceptionBuddy {
      * @param inst      The instrumentation instance.
      */
     public static void premain(String agentArgs, Instrumentation inst) {
+        try {
+            File agentJar = new File(ExceptionBuddy.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            //Since we are dealing with java.lang.Throwable transformation, Boostrap classloader will be the one trying to load our agent classes downstream.
+            //This will result in classloading issues due to visibility principle.
+            //Normal approach is to use -Xbootclasspath but to avoid unnecessary JVM options setup, we are using the below to append our agent jar to bootstrap's classpath.
+            inst.appendToBootstrapClassLoaderSearch(new JarFile(agentJar));
+        } catch (URISyntaxException | IOException e) {
+            throw new RuntimeException(e);
+        }
         instrument(agentArgs, inst, PREMAIN_MODE);
     }
 
