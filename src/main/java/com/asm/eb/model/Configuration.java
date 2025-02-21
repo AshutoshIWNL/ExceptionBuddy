@@ -14,6 +14,7 @@ public class Configuration {
     private boolean exceptionMonitoring;
     private String cnfSkipString;
     private boolean printJVMSysProps;
+    private boolean printEnvironmentVariables;
     public List<String> getFilters() {
         return filters;
     }
@@ -68,5 +69,13 @@ public class Configuration {
 
     public void setPrintJVMSysProps(boolean printJVMSysProps) {
         this.printJVMSysProps = printJVMSysProps;
+    }
+
+    public boolean isPrintEnvironmentVariables() {
+        return printEnvironmentVariables;
+    }
+
+    public void setPrintEnvironmentVariables(boolean printEnvironmentVariables) {
+        this.printEnvironmentVariables = printEnvironmentVariables;
     }
 }

@@ -7,5 +7,6 @@
   "classLoaderTracing" : true,
   "exceptionMonitoring" : false,
   "cnfSkipString" : "java.lang.ClassLoader.loadClass(ClassLoader.java:406)",
-  "printJVMSysProps": true
+  "printJVMSysProps": true,
+  "printEnvironmentVariables": true
 }

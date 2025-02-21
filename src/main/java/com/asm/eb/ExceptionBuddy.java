@@ -98,6 +98,8 @@ public class ExceptionBuddy {
         exceptionLogger.logInfo(JVMUtils.getJVMCommandLine());
         if(configuration.isPrintJVMSysProps())
             exceptionLogger.logInfo(JVMUtils.getJVMSystemProperties());
+        if(configuration.isPrintEnvironmentVariables())
+            exceptionLogger.logInfo(JVMUtils.getEnvVars());
 
         ExceptionTransformer exceptionTransformer = new ExceptionTransformer(configuration, exceptionLogger);
 
