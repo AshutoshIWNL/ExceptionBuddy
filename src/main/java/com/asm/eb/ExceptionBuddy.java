@@ -41,8 +41,9 @@ public class ExceptionBuddy {
             //This will result in classloading issues due to visibility principle.
             //Normal approach is to use -Xbootclasspath but to avoid unnecessary JVM options setup, we are using the below to append our agent jar to bootstrap's classpath.
             inst.appendToBootstrapClassLoaderSearch(new JarFile(agentJar));
-        } catch (URISyntaxException | IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            System.err.println(EXCEPTION_BUDDY_TAG + " failure in premain: " + e.getMessage());
+            return;
         }
         instrument(agentArgs, inst, PREMAIN_MODE);
     }
@@ -60,8 +61,9 @@ public class ExceptionBuddy {
             //This will result in classloading issues due to visibility principle.
             //Normal approach is to use -Xbootclasspath but since it is runtime, we are using the below to append our agent jar to bootstrap's classpath.
             inst.appendToBootstrapClassLoaderSearch(new JarFile(agentJar));
-        } catch (URISyntaxException | IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            System.err.println(EXCEPTION_BUDDY_TAG + " failure in agentmain: " + e.getMessage());
+            return;
         }
         instrument(agentArgs, inst, AGENTMAIN_MODE);
     }
@@ -125,7 +127,7 @@ public class ExceptionBuddy {
 
         Thread shutdownHook = new Thread(() -> {
             JVMExceptionMonitor jvmExceptionMonitor = JVMExceptionMonitor.getInstance();
-            if(jvmExceptionMonitor != null)
+            if (jvmExceptionMonitor != null)
                 jvmExceptionMonitor.shutdown();
             ExceptionLogger.getInstance().close();
             System.out.println(EXCEPTION_BUDDY_TAG + " Shutdown complete.");

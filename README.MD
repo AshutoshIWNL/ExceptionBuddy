@@ -34,7 +34,7 @@ ExceptionBuddy uses the Java Instrumentation API to modify the bytecode of `java
 2. Add the agent to your Java command line:
 
 ```bash
-java -Xbootclasspath/a:C:\tools\ExceptionBuddy-1.0-SNAPSHOT.jar -javaagent:C:\tools\ExceptionBuddy-1.0-SNAPSHOT.jar=configurationFile=C:\tools\ebConfig.json -jar your-application.jar
+java -javaagent:C:\tools\ExceptionBuddy-1.0-SNAPSHOT.jar=configurationFile=C:\tools\ebConfig.json -jar your-application.jar
 ```
 
 ### Configuration

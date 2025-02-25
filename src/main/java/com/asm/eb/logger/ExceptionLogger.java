@@ -24,6 +24,8 @@ public class ExceptionLogger {
     private final String cnfSkipString;
     private static final String defaultCnfSkipString = "java.lang.ClassLoader.loadClass";
     private static boolean isJdk9OrLater = Integer.parseInt(System.getProperty("java.version").split("\\.")[0]) >= 9;
+    //To help avoid ClassCircularityError
+    private static final ThreadLocal<Boolean> isInsideLogging = ThreadLocal.withInitial(() -> false);
 
     private final Lock lock = new ReentrantLock();
 
@@ -57,7 +59,11 @@ public class ExceptionLogger {
     }
 
     public void logException(Throwable ex) {
+        if (isInsideLogging.get()) {
+            return;
+        }
         lock.lock();
+        isInsideLogging.set(true);
         try {
             if(!isJdk9OrLater) {
                 if(ex instanceof ClassNotFoundException) {
@@ -81,6 +87,7 @@ public class ExceptionLogger {
             writer.println();
             writer.flush();
         } finally {
+            isInsideLogging.set(false);
             lock.unlock();
         }
     }
@@ -134,12 +141,17 @@ public class ExceptionLogger {
     }
 
     public void logClassLoading(String message) {
+        if (isInsideLogging.get()) {
+            return;
+        }
         lock.lock();
+        isInsideLogging.set(true);
         try {
             if (writer == null) return;
             writer.println(getTimestamp() + " [CLT]" + " [" + Thread.currentThread().getName() + "]\n" + message + "\n");
             writer.flush();
         } finally {
+            isInsideLogging.set(false);
             lock.unlock();
         }
     }

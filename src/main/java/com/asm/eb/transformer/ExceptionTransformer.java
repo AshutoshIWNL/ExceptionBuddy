@@ -21,6 +21,7 @@ public class ExceptionTransformer implements ClassFileTransformer {
     private final Configuration configuration;
     private final ExceptionLogger exceptionLogger;
     private static final String THROWABLE_CLASS_NAME_FORMATTED = "java/lang/Throwable";
+    private static final String EB_PACKAGE = "com/asm/eb";
 
     /**
      * Constructs an ExceptionTransformer instance with the provided configuration and logger.
@@ -47,17 +48,18 @@ public class ExceptionTransformer implements ClassFileTransformer {
     @Override
     public byte[] transform(ClassLoader loader, String className,
                             Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-        if(configuration.isClassLoaderTracing()) {
-            if(className != null) {
-                String traceInfo;
-                if (protectionDomain != null) {
-                    URL jarLocation = protectionDomain.getCodeSource().getLocation();
-                    traceInfo = "Class: " + className + "\n" + "ClassLoader Hierarchy: " + getClassLoaderHierarchy(loader) + "\nLoaded from: " + jarLocation.getPath();
-                } else {
-                    traceInfo = "Class: " + className + "\n" + "ClassLoader Hierarchy: " + getClassLoaderHierarchy(loader);
-                }
-                exceptionLogger.logClassLoading(traceInfo);
+        //Skipping JDK classes because logging classloading events for JDK classes can cause circular dependencies (ClassCircularityError)
+        if(configuration.isClassLoaderTracing() && className != null &&
+                !className.startsWith("java/") && !className.startsWith("jdk/") &&
+                !className.startsWith("sun/") && !className.startsWith("javax/") && !className.startsWith(EB_PACKAGE)) {
+            String traceInfo;
+            if (protectionDomain != null) {
+                URL jarLocation = protectionDomain.getCodeSource().getLocation();
+                traceInfo = "Class: " + className + "\n" + "ClassLoader Hierarchy: " + getClassLoaderHierarchy(loader) + "\nLoaded from: " + jarLocation.getPath();
+            } else {
+                traceInfo = "Class: " + className + "\n" + "ClassLoader Hierarchy: " + getClassLoaderHierarchy(loader);
             }
+            exceptionLogger.logClassLoading(traceInfo);
         }
         if (!THROWABLE_CLASS_NAME_FORMATTED.equals(className)) {
             return classfileBuffer;
