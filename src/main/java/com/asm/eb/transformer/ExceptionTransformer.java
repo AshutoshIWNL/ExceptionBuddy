@@ -72,7 +72,7 @@ public class ExceptionTransformer implements ClassFileTransformer {
                 if (isJdk9OrLater) {
                     // In JDK 8, we used inst.appendToBootstrapClassLoaderSearch() to ensure that ExceptionLogger was loaded by the
                     // bootstrap class loader, as Throwable itself is loaded by bootstrap. However, in JDK 9+, this approach no longer
-                    // works because the bootstrap class loader does not search added JARs. To work around this, we dynamically load
+                    // works when we do a runtime attach. To work around this, we dynamically load
                     // ExceptionLogger using the thread context class loader instead. Additionally, we explicitly pass (Object[]) null
                     // for no-arg method calls and wrap 'this' in new Object[]{this} for proper reflection-based invocation.
                     // This ensures compatibility with both JDK 8 and JDK 17.
