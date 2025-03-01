@@ -19,7 +19,6 @@ ExceptionBuddy uses the Java Instrumentation API to modify the bytecode of `java
 - Catches exceptions before they're caught by application code
 - Records exceptions that might be suppressed or swallowed
 - Maintains a complete audit trail of exception occurrences
-- Works with any JVM-based language
 
 ## Getting Started
 
