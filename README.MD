@@ -11,6 +11,8 @@ ExceptionBuddy is a powerful Java agent that provides comprehensive exception mo
 - **Low Overhead**: Minimal performance impact on your running application
 - **Runtime Exception Monitoring**: Real-time monitoring of exception patterns and frequencies
 - **Runtime Attach**: Supports attach at Runtime through Attach API
+- **JVM System Properties**: Supports printing JVM system properties
+- **Environment Variables**: Supports printing Environment variables
 
 ## How It Works
 
