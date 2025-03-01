@@ -45,9 +45,11 @@ Create a `ebConfig.json` file with your desired settings:
 useFilters: Whether to use the filters to limit the exceptions that are dumped - (true/false)
 filters: Define what filters to use - (org.apache.log4j)
 logFilePath: Path of the log file that the agent will use - (C:\\eb.log)
-classLoadTracing: Shows classloading information - (true/false)
+classLoadTracing: Prints classloading information - (true/false)
 exceptionMonitoring: Prints exception statistics every 60 seconds - (true/false)
 cnfSkipString: This is a special property which helps avoid false positve ClassNotFoundExceptions and is JDK version dependent - (java.lang.ClassLoader.loadClass(ClassLoader.java:411))
+"printJVMSysProps" : Prints current JVM system properties - (true/false)
+"printEnvironmentVariables": Prints environment variables picked up by the JVM - (true/false)
 ```
 
 Example:
@@ -60,7 +62,9 @@ Example:
   "logFilePath": "C:\\tools\\eb.log",
   "classLoaderTracing" : true,
   "exceptionMonitoring" : false,
-  "cnfSkipString" : "java.lang.ClassLoader.loadClass(ClassLoader.java:406)"
+  "cnfSkipString" : "java.lang.ClassLoader.loadClass(ClassLoader.java:406)",
+  "printJVMSysProps" : true,
+  "printEnvironmentVariables": true
 }
 ```
 
@@ -69,7 +73,7 @@ Example:
 ```bash
 git clone https://github.com/AshutoshIWNL/ExceptionBuddy.git
 cd ExceptionBuddy
-mvn clean install
+mvn clean package
 ```
 
 ## Contributing
