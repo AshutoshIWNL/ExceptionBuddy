@@ -2,6 +2,7 @@ package com.asm.eb.logger;
 
 import com.asm.eb.store.StatsStore;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -33,10 +34,18 @@ public class ExceptionLogger {
         this.filters = filters;
         this.monitorException = monitorException;
         this.cnfSkipString = cnfSkipString;
+        if (logFilePath == null || logFilePath.trim().isEmpty()) {
+            throw new IllegalArgumentException("Configuration property 'logFilePath' is required and cannot be blank.");
+        }
         try {
-            writer = new PrintWriter(new FileWriter(logFilePath, true), true);
+            File logFile = new File(logFilePath.trim());
+            File parentDir = logFile.getParentFile();
+            if (parentDir != null && !parentDir.exists() && !parentDir.mkdirs() && !parentDir.exists()) {
+                throw new IllegalArgumentException("Failed to create log directory: " + parentDir.getAbsolutePath());
+            }
+            writer = new PrintWriter(new FileWriter(logFile, true), true);
         } catch (IOException e) {
-            System.err.println("[ExceptionBuddy] Failed to initialize logger: " + e.getMessage());
+            throw new IllegalArgumentException("Failed to initialize logger with file " + logFilePath + ": " + e.getMessage(), e);
         }
     }
 

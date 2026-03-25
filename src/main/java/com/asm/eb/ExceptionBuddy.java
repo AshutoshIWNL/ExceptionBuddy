@@ -93,9 +93,15 @@ public class ExceptionBuddy {
             return;
         }
 
-        ExceptionLogger exceptionLogger = configuration.isUseFilters()
-                ? ExceptionLogger.getInstance(configuration.getLogFilePath(), configuration.getFilters(), configuration.isExceptionMonitoring(), configuration.getCnfSkipString())
-                : ExceptionLogger.getInstance(configuration.getLogFilePath(), null, configuration.isExceptionMonitoring(), configuration.getCnfSkipString());
+        ExceptionLogger exceptionLogger;
+        try {
+            exceptionLogger = configuration.isUseFilters()
+                    ? ExceptionLogger.getInstance(configuration.getLogFilePath(), configuration.getFilters(), configuration.isExceptionMonitoring(), configuration.getCnfSkipString())
+                    : ExceptionLogger.getInstance(configuration.getLogFilePath(), null, configuration.isExceptionMonitoring(), configuration.getCnfSkipString());
+        } catch (RuntimeException e) {
+            System.err.println(EXCEPTION_BUDDY_TAG + " Failed to initialize logger: " + e.getMessage());
+            return;
+        }
 
         exceptionLogger.logInfo("Exception Buddy initialized successfully.");
         exceptionLogger.logInfo(JVMUtils.getJVMCommandLine());
