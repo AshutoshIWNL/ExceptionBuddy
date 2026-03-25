@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.net.URL;
+import java.security.CodeSource;
 import java.security.ProtectionDomain;
 
 /**
@@ -53,25 +54,19 @@ public class ExceptionTransformer implements ClassFileTransformer {
     @Override
     public byte[] transform(ClassLoader loader, String className,
                             Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-        //Skipping JDK classes because logging classloading events for JDK classes can cause circular dependencies (ClassCircularityError)
-        if(configuration.isClassLoaderTracing() && className != null &&
+        // Skipping JDK and agent classes because logging all load events can cause circular dependencies.
+        if (configuration.isClassLoaderTracing() && className != null &&
                 !className.startsWith("java/") && !className.startsWith("jdk/") &&
                 !className.startsWith("sun/") && !className.startsWith("javax/") && !className.startsWith(EB_PACKAGE)) {
-            String traceInfo;
-            if (protectionDomain != null) {
-                URL jarLocation = protectionDomain.getCodeSource().getLocation();
-                traceInfo = "Class: " + className + "\n" + "ClassLoader Hierarchy: " + getClassLoaderHierarchy(loader) + "\nLoaded from: " + jarLocation.getPath();
-            } else {
-                traceInfo = "Class: " + className + "\n" + "ClassLoader Hierarchy: " + getClassLoaderHierarchy(loader);
-            }
-            exceptionLogger.logClassLoading(traceInfo);
+            exceptionLogger.logClassLoading(buildClassLoadingTrace(loader, className, protectionDomain));
         }
         if (!THROWABLE_CLASS_NAME_FORMATTED.equals(className)) {
             return classfileBuffer;
         }
+        CtClass throwableClass = null;
         try {
             ClassPool classPool = ClassPool.getDefault();
-            CtClass throwableClass = classPool.makeClass(new ByteArrayInputStream(classfileBuffer));
+            throwableClass = classPool.makeClass(new ByteArrayInputStream(classfileBuffer));
             boolean isJdk9OrLater = Integer.parseInt(System.getProperty("java.version").split("\\.")[0]) >= 9;
             if (isJdk9OrLater && mode.equals("attachVM")) {
                 // Fix for JDK 9+ visibility issue in agentmain mode:
@@ -93,8 +88,35 @@ public class ExceptionTransformer implements ClassFileTransformer {
             return throwableClass.toBytecode();
         } catch (Exception e) {
             exceptionLogger.logError("Error during Throwable modification: " + e.getMessage());
+        } finally {
+            if (throwableClass != null) {
+                throwableClass.detach();
+            }
         }
         return classfileBuffer;
+    }
+
+    private String buildClassLoadingTrace(ClassLoader loader, String className, ProtectionDomain protectionDomain) {
+        StringBuilder traceInfo = new StringBuilder();
+        traceInfo.append("Class: ").append(className).append('\n');
+        traceInfo.append("ClassLoader Hierarchy: ").append(getClassLoaderHierarchy(loader));
+
+        URL jarLocation = resolveLocation(protectionDomain);
+        if (jarLocation != null) {
+            traceInfo.append('\n').append("Loaded from: ").append(jarLocation.getPath());
+        }
+        return traceInfo.toString();
+    }
+
+    private URL resolveLocation(ProtectionDomain protectionDomain) {
+        if (protectionDomain == null) {
+            return null;
+        }
+        CodeSource codeSource = protectionDomain.getCodeSource();
+        if (codeSource == null) {
+            return null;
+        }
+        return codeSource.getLocation();
     }
 
     /**
@@ -113,11 +135,6 @@ public class ExceptionTransformer implements ClassFileTransformer {
 
         // Always include the Bootstrap class loader at the end
         hierarchy.append("Bootstrap");
-
-        if (hierarchy.length() > 0 && loader != null) {
-            hierarchy.setLength(hierarchy.length() - 4);
-        }
-
         return hierarchy.toString();
     }
 }

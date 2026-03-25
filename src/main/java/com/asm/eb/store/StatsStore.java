@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class StatsStore {
     private static final AtomicLong totalExceptionCount = new AtomicLong(0);
-    private static final Map<String, Long> criticalExceptionStats = new ConcurrentHashMap<>();
+    private static final Map<String, AtomicLong> criticalExceptionStats = new ConcurrentHashMap<>();
 
     public static void incrementExceptionCount() {
         totalExceptionCount.incrementAndGet();
@@ -23,11 +23,15 @@ public class StatsStore {
         return totalExceptionCount.get();
     }
 
-    public static synchronized void incrementCriticalExceptionCount(String exceptionType) {
-        criticalExceptionStats.merge(exceptionType, 1L, Long::sum);
+    public static void incrementCriticalExceptionCount(String exceptionType) {
+        criticalExceptionStats.computeIfAbsent(exceptionType, key -> new AtomicLong(0)).incrementAndGet();
     }
 
-    public static synchronized Map<String, Long> getCriticalExceptionStats() {
-        return new ConcurrentHashMap<>(criticalExceptionStats);
+    public static Map<String, Long> getCriticalExceptionStats() {
+        Map<String, Long> snapshot = new ConcurrentHashMap<>();
+        for (Map.Entry<String, AtomicLong> entry : criticalExceptionStats.entrySet()) {
+            snapshot.put(entry.getKey(), entry.getValue().get());
+        }
+        return snapshot;
     }
 }
