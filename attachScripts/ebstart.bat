@@ -12,4 +12,9 @@ REM Prompt for process ID
 set /p PID="Enter process ID: "
 
 REM Execute the Java command
-"%JAVA_HOME%\bin\java" -cp ".;%AGENT_JAR%" com.asm.eb.attach.AgentAttachCLI --agentJar "%AGENT_JAR%" --configurationFile "%CONFIG_FILE%" --pid "%PID%"
+set TOOLS_JAR=%JAVA_HOME%\lib\tools.jar
+if exist "%TOOLS_JAR%" (
+  "%JAVA_HOME%\bin\java" -cp ".;%AGENT_JAR%;%TOOLS_JAR%" com.asm.eb.attach.AgentAttachCLI --agentJar "%AGENT_JAR%" --configurationFile "%CONFIG_FILE%" --pid "%PID%"
+) else (
+  "%JAVA_HOME%\bin\java" -cp ".;%AGENT_JAR%" com.asm.eb.attach.AgentAttachCLI --agentJar "%AGENT_JAR%" --configurationFile "%CONFIG_FILE%" --pid "%PID%"
+)

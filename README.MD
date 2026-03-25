@@ -57,6 +57,7 @@ Notes:
 - `classLoaderTracing` can produce high log volume and should be enabled only for focused diagnostics.
 - `printJVMSysProps` and `printEnvironmentVariables` can expose secrets; keep them disabled by default in production.
 - If `useFilters` is `true`, `filters` must contain at least one non-empty entry.
+- Runtime config reload is not supported yet; config is read once at startup attach or runtime attach.
 
 ## Building from Source
 
