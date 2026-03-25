@@ -14,4 +14,4 @@ read -p "Enter configuration file path: " CONFIG_FILE
 read -p "Enter process ID: " PID
 
 # Execute the Java command
-$JAVA_HOME/bin/java -cp ".:$AGENT_JAR:$JAVA_HOME/lib/tools.jar" com.asm.eb.attach.AgentAttachCLI -agentJar "$AGENT_JAR" -configurationFile "$CONFIG_FILE" -pid "$PID"
+"$JAVA_HOME/bin/java" -cp ".:$AGENT_JAR" com.asm.eb.attach.AgentAttachCLI --agentJar "$AGENT_JAR" --configurationFile "$CONFIG_FILE" --pid "$PID"

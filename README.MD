@@ -1,96 +1,71 @@
 # ExceptionBuddy
 
-ExceptionBuddy is a powerful Java agent that provides comprehensive exception monitoring and logging capabilities by instrumenting Java's exception handling at runtime. It captures all exceptions that occur within the JVM, including those that are caught and suppressed, making it an invaluable tool for debugging and monitoring Java applications.
+ExceptionBuddy is a Java agent for comprehensive exception monitoring and logging through runtime instrumentation. It captures exceptions across the JVM, including caught exceptions, to improve debugging and production diagnostics.
 
 ## Features
 
-- **Complete Exception Capture**: Captures all exceptions in the JVM, including caught, suppressed, and initialization errors
-- **Non-invasive Implementation**: Works without modifying your application code through Java instrumentation
-- **Configurable Filtering**: Support for custom exception filters to focus on exceptions that are invoked from interested classes
-- **Detailed Class Loading Tracing**: Optional tracing of class loader hierarchies for debugging class loading issues
-- **Low Overhead**: Minimal performance impact on your running application
-- **Runtime Exception Monitoring**: Real-time monitoring of exception patterns and frequencies
-- **Runtime Attach**: Supports attach at Runtime through Attach API
-- **JVM System Properties**: Supports printing JVM system properties
-- **Environment Variables**: Supports printing Environment variables
+- Complete exception capture across the JVM
+- Non-invasive instrumentation (no application code changes)
+- Configurable stack-trace filtering
+- Optional class-loader tracing
+- Runtime exception statistics monitoring
+- Runtime attach support via Attach API
+- Optional JVM system property dump
+- Optional environment variable dump
 
 ## How It Works
 
-ExceptionBuddy uses the Java Instrumentation API to modify the bytecode of `java.lang.Throwable` at runtime. By instrumenting the base class of all exceptions, it ensures that every exception instance, regardless of where or how it occurs, is captured and logged. This approach provides several advantages:
-
-- Catches exceptions before they're caught by application code
-- Records exceptions that might be suppressed or swallowed
-- Maintains a complete audit trail of exception occurrences
+ExceptionBuddy instruments `java.lang.Throwable` using the Java Instrumentation API. By instrumenting the base exception type, it captures exception creation events regardless of where they are later handled.
 
 ## Getting Started
 
 ### Prerequisites
 
 - Java 8 or higher
-- A Java application you want to monitor
+- A target JVM application
 
-### Installation
-
-1. Download the latest ExceptionBuddy JAR from the releases page
-2. Add the agent to your Java command line:
+### Launch-Time Agent
 
 ```bash
 java -javaagent:C:\tools\ExceptionBuddy-1.0-SNAPSHOT.jar=configurationFile=C:\tools\ebConfig.json -jar your-application.jar
 ```
 
-### Configuration
+### Runtime Attach
 
-Create a `ebConfig.json` file with your desired settings:
-
-```properties
-useFilters: Whether to use the filters to limit the exceptions that are dumped - (true/false)
-filters: Define what filters to use - (org.apache.log4j)
-logFilePath: Path of the log file that the agent will use - (C:\\eb.log)
-classLoadTracing: Prints classloading information - (true/false)
-exceptionMonitoring: Prints exception statistics every 60 seconds - (true/false)
-cnfSkipString: This is a special property which helps avoid false positve ClassNotFoundExceptions and is JDK version dependent - (java.lang.ClassLoader.loadClass(ClassLoader.java:411))
-"printJVMSysProps" : Prints current JVM system properties - (true/false)
-"printEnvironmentVariables": Prints environment variables picked up by the JVM - (true/false)
+```bash
+java -cp ExceptionBuddy-1.0-SNAPSHOT.jar com.asm.eb.attach.AgentAttachCLI --agentJar C:\tools\ExceptionBuddy-1.0-SNAPSHOT.jar --configurationFile C:\tools\ebConfig.json --pid <target-jvm-pid>
 ```
 
-Example:
-```properties
+## Configuration
+
+Create `ebConfig.json`:
+
+```json
 {
   "useFilters": true,
-  "filters": [
-    "org.apache.logging.log4j"
-  ],
+  "filters": ["org.apache.logging.log4j"],
   "logFilePath": "C:\\tools\\eb.log",
-  "classLoaderTracing" : true,
-  "exceptionMonitoring" : false,
-  "cnfSkipString" : "java.lang.ClassLoader.loadClass(ClassLoader.java:406)",
-  "printJVMSysProps" : true,
-  "printEnvironmentVariables": true
+  "classLoaderTracing": false,
+  "exceptionMonitoring": false,
+  "cnfSkipString": "java.lang.ClassLoader.loadClass(ClassLoader.java:406)",
+  "printJVMSysProps": false,
+  "printEnvironmentVariables": false
 }
 ```
+
+Notes:
+- `classLoaderTracing` can produce high log volume and should be enabled only for focused diagnostics.
+- `printJVMSysProps` and `printEnvironmentVariables` can expose secrets; keep them disabled by default in production.
+- If `useFilters` is `true`, `filters` must contain at least one non-empty entry.
 
 ## Building from Source
 
 ```bash
 git clone https://github.com/AshutoshIWNL/ExceptionBuddy.git
 cd ExceptionBuddy
-mvn clean package
+mvn clean test package
 ```
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
-
-
-## Author
-
-Ashutosh Mishra 【=◈︿◈=】
-
-## Support and Feedback
-
-- Create an issue for bug reports or feature requests
-- For general questions, please use the Discussions tab
-
-## Acknowledgments
-
-- Special thanks to the Javassist team for their excellent bytecode manipulation library
+Contributions are welcome through issues and pull requests.
